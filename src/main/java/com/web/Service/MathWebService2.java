@@ -15,13 +15,13 @@ public class MathWebService2 {
 	public int NumNeg = 0;
 	 public int Sqrt = 0;
 
-	public String solve(MathDTO dto) throws Exception {
+	public String solve(MathDTO data) throws Exception {
 		
 		try{
 			
-			String expression = dto.getExpression();
+			String expression = data.getExpression();
 			
-			int precision = dto.getPrecision();
+			int precision = data.getPrecision();
 			
 			String total = solveParentheses(expression);
 			
@@ -43,34 +43,37 @@ public class MathWebService2 {
 	}
 		 
 	
-	public String solveParentheses (String text) {
+	public String solveParentheses(String expression) {
 		
 		
-		while(text.contains("sqrt")) { // Need to solve the sqrt before it enters into the next While or it will loop forever.
+		if(expression.contains("sqrt")) { // Need to solve the sqrt before it enters into the next While or it will loop forever.
 			
-			text = resolveSquareRoot(text);
+			expression = resolveSquareRoot(expression);
 		}
 		
-        while(text.contains("(") && text.contains(")")) { // Enters here if it detects a parentheses.
+        while(expression.contains("(") && expression.contains(")")) { // Enters here if it detects a parentheses.
         	
-            int start = 0;
-            int end = 0;
+            int startParentheses = 0;
+            int endParentheses = 0;
             
-            for (int i = 0; i < text.length(); i++) {
+            for (int i = 0; i < expression.length(); i++) {
             	
-                if (text.charAt(i) == '(') { // Saves the position of the start of the parentheses.
+                if (expression.charAt(i) == '(') { // Saves the position of the start of the parentheses.
                 	
-                    start = i;
+                    startParentheses = i;
                 }
                 
-                if (text.charAt(i) == ')') { // Saves the position of the end of the parentheses.
+                if (expression.charAt(i) == ')') { // Saves the position of the end of the parentheses.
 
-                    end = i;
+                    endParentheses = i;
                     
-                    String currentParentheses = text.substring(start + 1, end);
-                    String replacement = negativeFirstNumber(currentParentheses);
-                    String toBeReplaced = text.substring(start, end+1);
-                    text = text.replace(toBeReplaced, replacement);
+                    String currentParentheses = expression.substring(startParentheses + 1, endParentheses);
+                    
+                    String replacement = calculate(negativeFirstNumber(currentParentheses));
+                    
+                    String toBeReplaced = expression.substring(startParentheses, endParentheses+1);
+                    
+                    expression = expression.replace(toBeReplaced, replacement);
                     
                     break;
                     
@@ -78,94 +81,71 @@ public class MathWebService2 {
             }
         }
 
+        return calculate(negativeFirstNumber(ruleOfSigns(expression)));
         
-        for (int i = 1; i < text.length(); i++) {
-        	
-            if (text.charAt(i)=='-' && (text.charAt(i-1)=='*' || text.charAt(i-1) == '/')) {
-            	
-                for (int j = i-1; j >= 0 ; j--) {
-                	
-                    if (text.charAt(j)=='+') { // Changes a negative number to positive
-                    	
-                        StringBuilder texto1 = new StringBuilder(text); 
-                        texto1.replace(j, j+1, "-");
-                        text = texto1.toString();
-                        text = text.replaceFirst("-", "");
-                        break;
-                        
-                    }
-                    else if (text.charAt(j)=='-') {
-                    	
-                        StringBuilder texto1 = new StringBuilder(text);
-                        texto1.replace(j, j+1, "+");
-                        text = texto1.toString();
-                        text = text.replaceFirst("-", "");
-                        break;
-                        
-                    }
-                }
-            }
-        }
-        
-        for (int i = 1; i < text.length(); i++) { // If for example there is 2--2 itll change to 2+2 or 2-+2 changes to 2-2
-        	
-            if (text.charAt(i) == '-' && (text.charAt(i-1) == '-' || text.charAt(i-1) == '+')) {
-            	
-                if (text.charAt(i-1) == '-') { // 2--2 to 2+2
-                	
-                    StringBuilder texto1 = new StringBuilder(text);
-                    texto1.replace(i, i+1, "+");
-                    text = texto1.toString();
-                    text = text.replaceFirst("-", "");
-                }
-                else {
-                	
-                    StringBuilder texto1 = new StringBuilder(text);// 2+-2 to 2-2
-                    texto1.replace(i, i+1, "-");
-                    text = texto1.toString();
-                    text = text.replaceFirst("\\+", "");
-                }
-
-            }else if(text.charAt(i) == '+' && (text.charAt(i-1) == '-' || text.charAt(i-1) == '+')) {
-            	
-                if (text.charAt(i-1) == '-') { // 2-+2 to 2-2
-                	
-                    StringBuilder texto1 = new StringBuilder(text);
-                    texto1.replace(i, i+1, "-");
-                    text = texto1.toString();
-                    text = text.replaceFirst("-", "");
-                }
-                else{
-                	
-                    StringBuilder texto1 = new StringBuilder(text);// 2++2 to 2+2
-                    texto1.replace(i, i+1, "+");
-                    text = texto1.toString();
-                    text = text.replaceFirst("\\+", "");
-                }
-            }
-        }
-        
-        if (text.charAt(0) == '-') {
-        	
-            text = '0' + text;
-        }
-
-        return calculate(text);
     }
+
+
+	private String negativeFirstNumber(String expression) { // adds a 0 in front of the - so it wont crash because of a negative number being first 
+	    
+	    if (expression.charAt(0) == '-') {
+	    	
+	    	expression = '0' + expression;
+	    }
+	
+	    return expression;
+	}
 	
 
-    private String negativeFirstNumber(String text) { // adds a 0 in front of the - so it wont crash because of a negative number being first 
-        
-        if (text.charAt(0) == '-') {
+	public String ruleOfSigns(String expression) {
+		
+		StringBuilder texto1 = new StringBuilder(expression);
+		
+		for (int i = 1; i < expression.length(); i++) { // If for example there is 2--2 itll change to 2+2 or 2-+2 changes to 2-2
         	
-            text = '0' + text;
+            if (expression.charAt(i) == '-' && (expression.charAt(i-1) == '-' || expression.charAt(i-1) == '+')) {
+            	
+                if (expression.charAt(i-1) == '-') { // 2--2 to 2+2
+                	               
+                    texto1.replace(i, i+1, "+");
+                    expression = texto1.toString();
+                    expression = expression.replaceFirst("-", "");
+                    
+                }
+                
+                else { // 2+-2 to 2-2
+                	
+                    texto1.replace(i, i+1, "-");
+                    expression = texto1.toString();
+                    expression = expression.replaceFirst("\\+", "");
+                    
+                }
+
+            }else if(expression.charAt(i) == '+' && (expression.charAt(i-1) == '-' || expression.charAt(i-1) == '+')) {
+            	
+                if (expression.charAt(i-1) == '-') { // 2-+2 to 2-2
+
+                    texto1.replace(i, i+1, "-");
+                    expression = texto1.toString();
+                    expression = expression.replaceFirst("-", "");
+                    
+                }
+                
+                else{ // 2++2 to 2+2
+                	
+                    texto1.replace(i, i+1, "+");
+                    expression = texto1.toString();
+                    expression = expression.replaceFirst("\\+", "");
+                    
+                }
+            }
         }
-        String negNumSolved = calculate(text);
-        return negNumSolved;
-    }
+		
+		return expression;
+	}
+	
     
-    
-    public String calculate(String text){
+    public String calculate(String text){ // starts the calculation of the expression. Changes the Type from double to String.
      	
      	String respuestaFinal = String.valueOf(addAndSubtract(text));
      	return respuestaFinal;
@@ -173,7 +153,7 @@ public class MathWebService2 {
  	}
     
     
-    public String resolveSquareRoot(String text) {//solves square root
+    public String resolveSquareRoot(String text) { // solves square root.
     	
     	while (text.contains("sqrt")){
     		int start = 0;
@@ -184,20 +164,20 @@ public class MathWebService2 {
             
             for (int i = 0; i < text.length(); i++) {
             	
-                if (text.charAt(i) == 's') { // Saves the position of where the sqrt starts
+                if (text.charAt(i) == 's') { // Saves the position of where the sqrt starts.
                 	
                     start = i;
                     Sqrt = 1;
                 }
-                if (text.charAt(i) == '(') { // saves the position of the first parentheses
+                if (text.charAt(i) == '(') { // saves the position of the first parentheses.
                 	
                 	firstParentesis = i;
                 }
-                if (text.charAt(i) == ')') { // saves the position of the second parentheses
+                if (text.charAt(i) == ')') { // saves the position of the second parentheses.
                 	
                     end = i;
                     
-                    if(Sqrt ==1) {
+                    if(Sqrt ==1) { //if the sqrt has an expression inside it it will resolve it before applying the sqrt.
 	                    String currentSqrt = text.substring(firstParentesis+1, end);
 	                    
 	                    if(currentSqrt.contains("+")||currentSqrt.contains("-")||currentSqrt.contains("*")||currentSqrt.contains("/")) {
@@ -226,13 +206,23 @@ public class MathWebService2 {
 
     public double addAndSubtract(String textCalc) {
     	
-        for (int i = 1; i < textCalc.length(); i++) {
+    	
+        for (int i = 1; i < textCalc.length(); i++) { // This is to make a number negative in case of a multiplication/division with a negative number
         	
-            if(textCalc.charAt(i)=='-' && (textCalc.charAt(i-1)=='*' || textCalc.charAt(i-1)=='/')) { // Changes a number from negative to positive and saves that it was negative before
+            if(textCalc.charAt(i)=='-' && (textCalc.charAt(i-1)=='*' || textCalc.charAt(i-1)=='/')) { 
             	
-                textCalc = textCalc.replace("-", "");
-                NumNeg = 1;
+            	String replace = textCalc.substring(i-1, textCalc.length());
+            	
+                replace = replace.replace("-", "");
+                
+                String toBeReplaced = textCalc.substring(i-1, textCalc.length());
+                
+                textCalc = textCalc.replace(toBeReplaced, replace);
+                
+                NumNeg += 1;                          
+                
             }
+            
         }
 
         String[] text = textCalc.split("-");

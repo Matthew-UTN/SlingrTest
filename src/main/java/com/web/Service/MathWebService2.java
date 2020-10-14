@@ -23,7 +23,7 @@ public class MathWebService2 {
 			
 			int precision = dto.getPrecision();
 			
-			String total = DivisionDeParentesis(expression);
+			String total = solveParentheses(expression);
 			
 			Double toBeTruncated = Double.parseDouble(total);
 
@@ -43,7 +43,7 @@ public class MathWebService2 {
 	}
 		 
 	
-	public String DivisionDeParentesis (String text) {
+	public String solveParentheses (String text) {
 		
 		
 		while(text.contains("sqrt")) { // Need to solve the sqrt before it enters into the next While or it will loop forever.
@@ -67,7 +67,8 @@ public class MathWebService2 {
 
                     end = i;
                     
-                    String replacement = negativeFirstNumber(start, end, text);
+                    String currentParentheses = text.substring(start + 1, end);
+                    String replacement = negativeFirstNumber(currentParentheses);
                     String toBeReplaced = text.substring(start, end+1);
                     text = text.replace(toBeReplaced, replacement);
                     
@@ -153,14 +154,13 @@ public class MathWebService2 {
     }
 	
 
-    private String negativeFirstNumber(int start, int end, String text) { // adds a 0 in front of the - so it wont crash because of a negative number being first 
-        String textTemp = text.substring(start + 1, end);
+    private String negativeFirstNumber(String text) { // adds a 0 in front of the - so it wont crash because of a negative number being first 
         
-        if (textTemp.charAt(0) == '-') {
+        if (text.charAt(0) == '-') {
         	
-            textTemp = '0' + textTemp;
+            text = '0' + text;
         }
-        String negNumSolved = calculate(textTemp);
+        String negNumSolved = calculate(text);
         return negNumSolved;
     }
     
@@ -202,7 +202,7 @@ public class MathWebService2 {
 	                    
 	                    if(currentSqrt.contains("+")||currentSqrt.contains("-")||currentSqrt.contains("*")||currentSqrt.contains("/")) {
 	                    	
-	                    	squareRoot = Double.parseDouble(DivisionDeParentesis(currentSqrt));
+	                    	squareRoot = Double.parseDouble(solveParentheses(currentSqrt));
 	                    }else {
 	                    	
 	                    	squareRoot = Double.parseDouble(currentSqrt);

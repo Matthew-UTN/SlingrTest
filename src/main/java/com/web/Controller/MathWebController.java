@@ -4,11 +4,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.web.DTO.MathDTO;
@@ -16,7 +16,7 @@ import com.web.Service.MathWebService1;
 import com.web.Service.MathWebService2;
 
 @RestController
-@CrossOrigin(origins = "*", methods= {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
+@CrossOrigin(origins = "*", methods= {RequestMethod.GET, RequestMethod.POST})
 @RequestMapping(path = "api/v1/Math")
 public class MathWebController {
 	
@@ -32,12 +32,12 @@ public class MathWebController {
 	
 	
 
-	@GetMapping("/{expression}")
-	public ResponseEntity expressionGet(@PathVariable String expression) {
+	@GetMapping("/SolveGet")
+	public ResponseEntity<?> expressionGet(@RequestParam(value = "expression") String expression, @RequestParam(value = "precision") int precision) {
 		
 		try {
 			
-			return ResponseEntity.status(HttpStatus.OK).body(service1.solve(expression));
+			return ResponseEntity.status(HttpStatus.OK).body(service1.solve(expression,precision));
 
 		} catch (Exception e) {
 
@@ -47,8 +47,8 @@ public class MathWebController {
 
 	}
 	
-	@PostMapping("/")
-	public ResponseEntity post(@RequestBody MathDTO dto) {
+	@PostMapping("/SolvePost")
+	public ResponseEntity<?> post(@RequestBody MathDTO dto) {
 
 		try {
 

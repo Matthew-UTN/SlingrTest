@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import com.web.DTO.MathDTO;
-import com.web.Service.MathWebService1;
 import com.web.Service.MathWebService2;
 
 class MathWebService2Tests {
@@ -151,6 +150,20 @@ class MathWebService2Tests {
 		result = instance.solve(dto);
 		
 		assertEquals(expectedResult, result);
+	}
+	
+	
+	@Test
+	public void testPrecision() throws Exception {
+		
+		MathDTO dto = new MathDTO("2/3",4);
+		
+		String expectedResult = "0.6667";
+		
+		String result = instance.solve(dto);
+		
+		assertEquals(expectedResult, result);
+		
 	}
 
 	

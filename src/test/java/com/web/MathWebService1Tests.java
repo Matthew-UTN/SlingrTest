@@ -8,9 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.web.Service.MathWebService1;
 
 @SpringBootTest
-class MathWebServices1ApplicationTests {
+class MathWebService1Tests {
 	
 	MathWebService1 instance = new MathWebService1();
+	
+	int precision = 1;
 	
 	@Test
 	public void testAddition() throws Exception {
@@ -18,7 +20,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "5.0";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -26,13 +28,13 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "-1.0";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
 		expression = "2-+3";
 			
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 	}
@@ -44,7 +46,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "-1.0";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -52,7 +54,7 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "4.0";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 	}
@@ -64,7 +66,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "16.0";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -72,7 +74,7 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "-16.0";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -80,7 +82,7 @@ class MathWebServices1ApplicationTests {
 	
 		expectedResult = "-16.0";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -88,7 +90,7 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "16.0";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 	}
@@ -100,7 +102,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "5.0";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -108,7 +110,7 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "-0.5";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -116,7 +118,7 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "-0.5";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -124,7 +126,7 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "0.5";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 	}
@@ -136,7 +138,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "2.0";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 		
@@ -144,9 +146,25 @@ class MathWebServices1ApplicationTests {
 		
 		expectedResult = "-2.0";
 		
-		result = instance.solve(expression);
+		result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
+	}
+	
+	
+	@Test
+	public void testPrecision() throws Exception {
+		
+		String expression = "2/3";
+		
+		int precision = 4;
+		
+		String expectedResult = "0.6667";
+		
+		String result = instance.solve(expression,precision);
+		
+		assertEquals(expectedResult, result);
+		
 	}
 
 	
@@ -157,7 +175,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "8.0";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 	}
@@ -169,7 +187,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "7.8";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 	}
@@ -181,7 +199,7 @@ class MathWebServices1ApplicationTests {
 		
 		String expectedResult = "8.0";
 		
-		String result = instance.solve(expression);
+		String result = instance.solve(expression,precision);
 		
 		assertEquals(expectedResult, result);
 	}	

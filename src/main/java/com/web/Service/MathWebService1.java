@@ -1,5 +1,7 @@
 package com.web.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,28 +13,92 @@ public class MathWebService1 {
 	public int NumNeg = 0;
 	public int Sqrt = 0;
 
-	public String solve(String expression) throws Exception {
+	public String solve(String expression, int precision) throws Exception {
 		try{
 			
-			String total = solveParentheses(expression);
+			expression = solveParentheses(resolveSquareRoot(expression)); // Need to solve the sqrt before it enters into the next While or it will loop forever.
+
+			String total = String.valueOf(addAndSubtract(negativeFirstNumber(ruleOfSigns(expression))));
+			
+			Double toBeTruncated = Double.parseDouble(total);
+
+			Double truncatedDouble = BigDecimal.valueOf(toBeTruncated)
+					.setScale(precision, RoundingMode.HALF_UP)
+					.doubleValue();
+			
+			total = String.valueOf(truncatedDouble);
 			
 			return total;
 			
 		}catch (Exception e) {
+			
 			System.out.println(e);
+			
 			throw new Exception();
+			
 		}
 
 	}
+	
+	
+	public String resolveSquareRoot(String expression) { // solves square root.
+    	
+    	while (expression.contains("sqrt")){
+    		
+    		int start = 0;
+    		int openingParentesis = 0;
+            int closingParentheses = 0;
+            Double squareRoot = 0.0;
+            
+            
+            for (int i = 0; i < expression.length(); i++) {
+            	
+                if (expression.charAt(i) == 's') { // Saves the position of where the sqrt starts.
+                	
+                    start = i;
+                    Sqrt = 1;
+                }
+                if (expression.charAt(i) == '(') { // saves the position of the first parentheses.
+                	
+                	openingParentesis = i;
+                }
+                if (expression.charAt(i) == ')') { // saves the position of the second parentheses.
+                	
+                    closingParentheses = i;
+                    
+                    if(Sqrt ==1) { //if the sqrt has an expression inside it it will resolve it before applying the sqrt.
+	                    
+                    	String currentSqrt = expression.substring(openingParentesis+1, closingParentheses);
+	                    
+	                    if(currentSqrt.contains("+")||currentSqrt.contains("-")||currentSqrt.contains("*")||currentSqrt.contains("/")) {
+	                    	
+	                    	squareRoot = Double.parseDouble(solveParentheses(currentSqrt));
+	                    	
+	                    }else {
+	                    	
+	                    	squareRoot = Double.parseDouble(currentSqrt);
+	                    	
+	                    }
+	                    
+	                    String replacement = String.valueOf(Math.sqrt(squareRoot));
+	                    String toBeReplaced = expression.substring(start,closingParentheses+1);
+	                    expression = expression.replace(toBeReplaced, replacement);
+	                    
+	                    Sqrt = 0;
+	                    
+                    break;
+                    }
+                }
+            }
+    	}
+    	
+    	return expression;
+    	
+    }
 		 
 	
 	public String solveParentheses(String expression) {
-		
-		
-		if(expression.contains("sqrt")) { // Need to solve the sqrt before it enters into the next While or it will loop forever.
-			
-			expression = resolveSquareRoot(expression);
-		}
+
 		
         while(expression.contains("(") && expression.contains(")")) { // Enters here if it detects a parentheses.
         	
@@ -50,9 +116,9 @@ public class MathWebService1 {
 
                     endParentheses = i;
                     
-                    String currentParentheses = expression.substring(startParentheses + 1, endParentheses);
+                    String currentParentheses = expression.substring(startParentheses + 1, endParentheses); // Saves the current parentheses that is being calculated
                     
-                    String replacement = calculate(negativeFirstNumber(currentParentheses));
+                    String replacement = String.valueOf(addAndSubtract(negativeFirstNumber(currentParentheses))); // First we make sure that it has a 0- in case of a negative first number
                     
                     String toBeReplaced = expression.substring(startParentheses, endParentheses+1);
                     
@@ -64,7 +130,7 @@ public class MathWebService1 {
             }
         }
 
-        return calculate(negativeFirstNumber(ruleOfSigns(expression)));
+        return expression;
         
     }
 
@@ -82,7 +148,7 @@ public class MathWebService1 {
 
 	public String ruleOfSigns(String expression) {
 		
-		StringBuilder texto1 = new StringBuilder(expression);
+		StringBuilder signsSolver = new StringBuilder(expression);
 		
 		for (int i = 1; i < expression.length(); i++) { // If for example there is 2--2 itll change to 2+2 or 2-+2 changes to 2-2
         	
@@ -90,16 +156,16 @@ public class MathWebService1 {
             	
                 if (expression.charAt(i-1) == '-') { // 2--2 to 2+2
                 	               
-                    texto1.replace(i, i+1, "+");
-                    expression = texto1.toString();
+                    signsSolver.replace(i, i+1, "+");
+                    expression = signsSolver.toString();
                     expression = expression.replaceFirst("-", "");
                     
                 }
                 
                 else { // 2+-2 to 2-2
                 	
-                    texto1.replace(i, i+1, "-");
-                    expression = texto1.toString();
+                    signsSolver.replace(i, i+1, "-");
+                    expression = signsSolver.toString();
                     expression = expression.replaceFirst("\\+", "");
                     
                 }
@@ -108,16 +174,16 @@ public class MathWebService1 {
             	
                 if (expression.charAt(i-1) == '-') { // 2-+2 to 2-2
 
-                    texto1.replace(i, i+1, "-");
-                    expression = texto1.toString();
+                    signsSolver.replace(i, i+1, "-");
+                    expression = signsSolver.toString();
                     expression = expression.replaceFirst("-", "");
                     
                 }
                 
                 else{ // 2++2 to 2+2
                 	
-                    texto1.replace(i, i+1, "+");
-                    expression = texto1.toString();
+                    signsSolver.replace(i, i+1, "+");
+                    expression = signsSolver.toString();
                     expression = expression.replaceFirst("\\+", "");
                     
                 }
@@ -126,121 +192,64 @@ public class MathWebService1 {
 		
 		return expression;
 	}
-	
-    
-    public String calculate(String text){ // starts the calculation of the expression. Changes the Type from double to String.
-     	
-     	String respuestaFinal = String.valueOf(addAndSubtract(text));
-     	return respuestaFinal;
-     
- 	}
-    
-    
-    public String resolveSquareRoot(String text) { // solves square root.
-    	
-    	while (text.contains("sqrt")){
-    		int start = 0;
-    		int firstParentesis = 0;
-            int end = 0;
-            Double squareRoot = 0.0;
-            
-            
-            for (int i = 0; i < text.length(); i++) {
-            	
-                if (text.charAt(i) == 's') { // Saves the position of where the sqrt starts.
-                	
-                    start = i;
-                    Sqrt = 1;
-                }
-                if (text.charAt(i) == '(') { // saves the position of the first parentheses.
-                	
-                	firstParentesis = i;
-                }
-                if (text.charAt(i) == ')') { // saves the position of the second parentheses.
-                	
-                    end = i;
-                    
-                    if(Sqrt ==1) { //if the sqrt has an expression inside it it will resolve it before applying the sqrt.
-	                    String currentSqrt = text.substring(firstParentesis+1, end);
-	                    
-	                    if(currentSqrt.contains("+")||currentSqrt.contains("-")||currentSqrt.contains("*")||currentSqrt.contains("/")) {
-	                    	
-	                    	squareRoot = Double.parseDouble(solveParentheses(currentSqrt));
-	                    }else {
-	                    	
-	                    	squareRoot = Double.parseDouble(currentSqrt);
-	                    }
-	                    
-	                    String replacement = String.valueOf(Math.sqrt(squareRoot));
-	                    String toBeReplaced = text.substring(start,end+1);
-	                    text = text.replace(toBeReplaced, replacement);
-	                    
-	                    Sqrt = 0;
-	                    
-                    break;
-                    }
-                }
-            }
-    	}
-    	
-    	return text;
-    }
     
 
-    public double addAndSubtract(String textCalc) {
-    	
-    	
-        for (int i = 1; i < textCalc.length(); i++) { // This is to make a number negative in case of a multiplication/division with a negative number
+    public double addAndSubtract(String expression) {
+    	  	
+        for (int i = 1; i < expression.length(); i++) { // This is to make a number negative in case of a multiplication/division with a negative number
         	
-            if(textCalc.charAt(i)=='-' && (textCalc.charAt(i-1)=='*' || textCalc.charAt(i-1)=='/')) { 
+            if(expression.charAt(i)=='-' && (expression.charAt(i-1)=='*' || expression.charAt(i-1)=='/')) { 
             	
-            	String replace = textCalc.substring(i-1, textCalc.length());
+            	String replacement = expression.substring(i-1, expression.length()); // Because java doesnt have a remove function I improvised a somewhat similar way.
             	
-                replace = replace.replace("-", "");
+                replacement = replacement.replaceFirst("-", "");
                 
-                String toBeReplaced = textCalc.substring(i-1, textCalc.length());
+                String toBeReplaced = expression.substring(i-1, expression.length());
                 
-                textCalc = textCalc.replace(toBeReplaced, replace);
+                expression = expression.replace(toBeReplaced, replacement);
                 
                 NumNeg += 1;                          
                 
             }
             
         }
+        
 
-        String[] text = textCalc.split("-");
-        List<String> listText = new ArrayList<>();
+        String[] splitExpressionWithSubtraction = expression.split("-"); // Initializes the variable using subtraction
+        
+        List<String> groupUpNumbers = new ArrayList<>(); // Groups up numbers to be used in the equations
+        
 
-        for (int i = 0; i < text.length; i++) { // Does the calculation of a positive and negative(that was changed to positive) and makes it negative
+        for (int i = 0; i < splitExpressionWithSubtraction.length; i++) { // splits up the expression like [10,-,10] so its easier to be calculated
         	
-            if(text[i]!=""){
+            if(splitExpressionWithSubtraction[i]!=""){
             	
-                listText.add(text[i]);
+                groupUpNumbers.add(splitExpressionWithSubtraction[i]);
+                
             }
             
-            if (i != text.length - 1) {
+            if (i != splitExpressionWithSubtraction.length - 1) {
             	
-                listText.add("-");//Example : 9*-9 when it was changed to 9*9 adds a 0 like 0-9*9 so it will come out negative
+                groupUpNumbers.add("-"); 
+            
             }
         }
         
 
-        for (int i = 0; i < listText.size(); i++) {
+        for (int i = 0; i < groupUpNumbers.size(); i++) {
         	
-            if (listText.get(i).contains("+") && listText.get(i).length()>1) {
-                
-            	String temp = listText.get(i);
+            if (groupUpNumbers.get(i).contains("+") && groupUpNumbers.get(i).length()>1) {
             	
-                String[] parteDelTexto = temp.split("\\+");                              
+                String[] splitExpressionWithAddition = groupUpNumbers.get(i).split("\\+"); // splits the expression up like [10,+,10] so its easier to be calculated
+ 
+                groupUpNumbers.remove(i);
 
-                listText.remove(i);
-
-                for (int j = parteDelTexto.length-1; j >= 0; j--) {
+                for (int j = splitExpressionWithAddition.length-1; j >= 0; j--) {
                 	
-                    listText.add(i,parteDelTexto[j]);
+                    groupUpNumbers.add(i,splitExpressionWithAddition[j]);
                     if (j!=0) {
                     	
-                        listText.add(i,"+");
+                        groupUpNumbers.add(i,"+");
                     }
                 }
             }
@@ -251,89 +260,111 @@ public class MathWebService1 {
         double total;
         
 
-        if (listText.get(0).contains("*") || listText.get(0).contains("/")) {
+        if (groupUpNumbers.get(0).contains("*") || groupUpNumbers.get(0).contains("/")) {
         	
-            total = divisionAndMultiplication(listText.get(0));
+            total = divisionAndMultiplication(groupUpNumbers.get(0)); // we save the first number of the multiplication or division for later use
+            
         }
+        
         else {
         	
-            if (textCalc.charAt(0)=='+') { //-9*-9 --> problem was "","+","9*9" so it removes the empty and puts 0 --> "0","+","9*9"
-            	
-                listText.add(0,"0");
-                listText.remove(1);
+            if (expression.charAt(0)=='+') { //-9*-9 --> problem was "","+","9*9" so it removes the empty and puts 0 --> "0","+","9*9"
+
+                groupUpNumbers.remove(0);
+                
             }
             
-            total = Double.parseDouble(listText.get(0));
+            total = Double.parseDouble(groupUpNumbers.get(0));
+            
         }
         
 
-        for (int i = 2; i < listText.size(); i+=2) {
+        for (int i = 2; i < groupUpNumbers.size(); i+=2) {
         	
-            if (listText.get(i-1) == "-") { // Following PEMDAS it makes sure to do multiplication or division before subtraction
+            if (groupUpNumbers.get(i-1) == "-") { // Following PEMDAS it makes sure to do multiplication or division before subtraction
             	
-                total = total - divisionAndMultiplication(listText.get(i));
+                total = total - divisionAndMultiplication(groupUpNumbers.get(i));
+                
             }
             
-            else if (listText.get(i-1) == "+") { // Following PEMDAS it makes sure to do multiplication or division before addition
+            else if (groupUpNumbers.get(i-1) == "+") { // Following PEMDAS it makes sure to do multiplication or division before addition
             	
-                total = total + divisionAndMultiplication(listText.get(i));
-            }               
+                total = total + divisionAndMultiplication(groupUpNumbers.get(i));
+                
+            }  
+            
         }
+        
         return total;
     }
     
-    private double divisionAndMultiplication(String textCalc)
-    {
-        String[] text = textCalc.split("\\*");
-        List<String> listText = new ArrayList<>();
-
-        for (int i = 0; i < text.length; i++) { // Puts the equation into an array like 2*3 to [2,*,3]
-        	
-            listText.add(text[i]);
-            
-            if (i != text.length - 1) {
-            	
-                listText.add("*");
-            }
-        }
-
-        for (int i = 0; i < listText.size(); i++) { // Puts the equation into an array like 2/3 to [2,/,3]
-        	
-            if (listText.get(i).contains("/") && listText.get(i).length() > 1) {
-            	
-                String[] parteDelTexto = listText.get(i).split("\\/");
-
-                listText.remove(i);
-
-                for (int j = parteDelTexto.length - 1; j >= 0; j--) {
-                    listText.add(i, parteDelTexto[j]);
-                    if (j != 0) {
-                        listText.add(i, "/");
-                    }
-                }
-            }
-
-        }
-
-        double total = Double.parseDouble(listText.get(0)); // Saves the first value to do the calculation
+    private double divisionAndMultiplication(String expression) {
+    	
+        String[] splitExpression = expression.split("\\*"); // Initializes the variable using multiplication
         
-        for (int i = 2; i < listText.size(); i += 2) {
+        List<String> groupUpNumbers = new ArrayList<>(); // this is used to help the multiplication such as grouping up the strings to be converted to double to be used, example 
+        										   		 // "10*20" will be split up like [10,*,20] this way the ide knows what number is being used.
+
+        for (int i = 0; i < splitExpression.length; i++) { // Puts the equation into an array like 2*3 to [2,*,3]
         	
-            if (listText.get(i-1) == "/") {
+            groupUpNumbers.add(splitExpression[i]);
+            
+            if (i != splitExpression.length - 1) {
             	
-                total = total / Double.parseDouble(listText.get(i));
-                if(NumNeg==1) { // If it was saved that this was supposed to be negative it changes to negative
-                    total = total*-1;
-                    NumNeg = 0;
-                }
+                groupUpNumbers.add("*");
             }
-            else if (listText.get(i-1) == "*" ) {
+        }
+
+        for (int i = 0; i < groupUpNumbers.size(); i++) { // Puts the equation into an array like 2/3 to [2,/,3]
+        	
+            if (groupUpNumbers.get(i).contains("/") && groupUpNumbers.get(i).length() > 1) {
             	
-                total = total * Double.parseDouble(listText.get(i));
+                String[] splitExpressionWithDivision = groupUpNumbers.get(i).split("\\/");
+
+                groupUpNumbers.remove(i);
+
+                for (int j = splitExpressionWithDivision.length - 1; j >= 0; j--) {
+                	
+                    groupUpNumbers.add(i, splitExpressionWithDivision[j]);
+                    
+                    if (j != 0) {
+                    	
+                        groupUpNumbers.add(i, "/");
+                        
+                    }
+                    
+                }
+                
+            }
+
+        }
+
+        double total = Double.parseDouble(groupUpNumbers.get(0)); // Saves the first value to do the calculation
+        
+        for (int i = 2; i < groupUpNumbers.size(); i += 2) {
+        	
+            if (groupUpNumbers.get(i-1) == "/") {
+            	
+                total = total / Double.parseDouble(groupUpNumbers.get(i));
+                
                 if(NumNeg==1) { // If it was saved that this was supposed to be negative it changes to negative
+                	
                     total = total*-1;
                     NumNeg = 0;
+                    
                 }
+                
+            } else if (groupUpNumbers.get(i-1) == "*" ) {
+            	
+                total = total * Double.parseDouble(groupUpNumbers.get(i));
+                
+                if(NumNeg==1) { // If it was saved that this was supposed to be negative it changes to negative
+                	
+                    total = total*-1;
+                    NumNeg = 0;
+                    
+                }
+                
             }
 
         }
